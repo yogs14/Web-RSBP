@@ -16,7 +16,7 @@ pip install -r requirements.txt
 ## Running Backend
 ```shell
 cd <cloned_directory/server>
-.\venv\scripts\activate
+./venv/scripts/activate
 uvicorn server:app --reload
 
 # Open http://127.0.0.1:8000/docs
