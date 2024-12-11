@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ./src/main.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.035em;
+    height: 100%;
+  }
+
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+:root {
+  box-sizing: border-box;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --dashboard-bg: #eef0f6;
+}
+
+.dataframe {
+  width: 100%;
+  border-collapse: collapse;
+}
+.dataframe th, .dataframe td {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 8px;
+}
+.dataframe th {
+  background-color: #f2f2f2;
+}
