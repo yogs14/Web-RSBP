@@ -20,7 +20,7 @@ function App() {
 
   // Sklearn Gradient Boosting
   const [Sklearn, setSklearn] = useState(
-    {training_result : "", evaluation: "", feature_importance:"", shap: {img1:"", img2:""}, lime: {img1:"", img2:""}}
+    {training_result : "", evaluation: "", feature_importance:"", shap: {img1:"", img2:""}, lime: {html1:"", img2:""}}
   )
 
   // Model Type
@@ -71,13 +71,13 @@ function App() {
           return;
         }
 
-        HandleSubmitFile();
+        await HandleSubmitFile();
         setIsLoading(false)
         break;
 
       case 'Time Series Analytics':
         console.log("Performing Time Series Analytics...");
-        TimeSeriesAnalysis()
+        await TimeSeriesAnalysis()
         setIsLoading(false)
         break;
 
@@ -206,22 +206,24 @@ function App() {
             Forms
           </div>  
 
-          <div className="text-primary-content w-fit p-4 border border-secondary border-solid ml-4 rounded-lg">
+          <div className='flex justify-center mt-4 md:block'>
+          <div className="text-primary-content w-fit p-4 border border-secondary border-solid ml-4 rounded-lg mx-4">
               <div className='flex flex-row gap-4'>
-              <p className='font-semibold'>Data Uploaded : </p>
-              <p className={`font-semibold ${isUploadedRef.current ? 'text-green-500' : 'text-red-600'}`}>
-                {isUploadedRef.current ? "True" : "False"}
-              </p>
+                <p className='font-semibold'>Data Uploaded : </p>
+                <p className={`font-semibold ${isUploadedRef.current ? 'text-green-500' : 'text-red-600'}`}>
+                  {isUploadedRef.current ? "True" : "False"}
+                </p>
               </div>
 
               {fileNameRef.current && (
                 <div className='flex flex-row gap-4'>
                   <p className='font-semibold'>File : </p>
-                  <p className={`font-semibold text-green-600`}>
-                    {<p> {fileNameRef.current} </p>}
-                  </p>
+                  <div className={`font-semibold text-green-600`}>
+                    {<div> {fileNameRef.current} </div>}
+                  </div>
                 </div>
               )}
+          </div>
           </div>
 
           <div className="max-w-md mx-auto mt-10 shadow-mx bg-[#f5f2f2] rounded-xl">
@@ -304,7 +306,7 @@ function App() {
               <>
               <div className='font-semibold mt-8 text-center text-gray-600 underline'>   File summary  </div>
               <div
-              className="html-table-container mt-6"
+              className="mt-6 px-6 overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
           </>
@@ -402,34 +404,35 @@ function App() {
           {optionAction === 'Shap Values' && Sklearn.shap.img1 != "" && (
             <>
               <div className='text-center font-semibold text-gray-400 underline mt-4'>Shap Values</div>
-                <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+                <div className="flex flex-col lg:flex-row mt-8 justify-center items-center">
                   {Sklearn.shap.img1 &&
                     <img
                       src={Sklearn.shap.img1}
                       alt="Shap Values1"
-                      className="flex-grow max-w-[45%] object-contain"
+                      className="flex-grow lg:max-w-[44%] object-contain px-2"
                     />
                   }
                   {Sklearn.shap.img2 &&
                     <img
                       src={Sklearn.shap.img2}
                       alt="Shap Values2"
-                      className="flex-grow max-w-[45%] object-contain"
+                      className="flex-grow lg:max-w-[44%] object-contain"
+                      style={{ transform: 'scale(0.7)' }}
+
                     />
                   }
               </div>
             </>
             )}
 
-        {optionAction === 'Lime' && Sklearn.lime.img1 != ""  && (
+        {optionAction === 'Lime' && Sklearn.lime.img2 != ""  && (
             <>
             <div className='text-center font-semibold text-gray-400 underline mt-4'>Lime Values</div>
-              <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
-                {Sklearn.lime.img1 &&
-                  <img
-                    src={Sklearn.lime.img1}
-                    alt="lime Values1"
-                    className="flex-grow max-w-[45%] object-contain"
+              <div className="flex flex-col lg:flex-row gap-8 mt-8 justify-center items-center">
+                {Sklearn.lime.html1 &&
+                  <div
+                  className='max-w-[48%] gap-2 xl:w-96'
+                  dangerouslySetInnerHTML={{ __html: Sklearn.lime.html1 }}
                   />
                 }
                 {Sklearn.lime.img2 &&

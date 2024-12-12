@@ -9,6 +9,7 @@ import io
 import base64
 import shap
 import lime
+import pandas as pd
 
 class SklearnProcessor:
     @staticmethod
@@ -117,16 +118,20 @@ class SklearnProcessor:
 
         # Create a buffer for the waterfall plot
         buffer1 = io.BytesIO()
-        plt.figure(figsize=(14, 6))  # Set a larger figure size
-        shap.plots.waterfall(shap_values[0], show=False)  # Prevent immediate display
+        ax = shap.plots.waterfall(shap_values[0], show=False)  # This returns an Axes object
+        # Access the parent figure of the Axes object
+        fig = ax.figure
+        # Set the figure size after creating the plot
+        fig.set_size_inches(18, 7) 
         plt.savefig(buffer1, format='png')
-        plt.close()  # Close the figure to prevent display
-        buffer1.seek(0)  # Reset the buffer pointer
+        plt.close(fig)  
+        buffer1.seek(0)  
 
         # Create a buffer for the summary plot
         buffer2 = io.BytesIO()
         plt.figure()  # Create a new figure
-        shap.summary_plot(shap_values, X_test, show=False)  # Prevent immediate display
+        plt.figure(figsize=(10, 7)) 
+        shap.summary_plot(shap_values, X_test, show=False)  
         plt.savefig(buffer2, format='png')
         plt.close()  # Close the figure to prevent display
         buffer2.seek(0)  # Reset the buffer pointer
@@ -154,27 +159,58 @@ class SklearnProcessor:
 
         # Get the LIME explanation for the chosen instance
         lime_explanation = lime_explainer.explain_instance(instance, g.sklearn_model.predict, num_features=10)
+        exp = lime_explanation.as_list()
+        features, effects = zip(*exp)
 
+        exp_df = pd.DataFrame({'Feature': features, 'Effect': effects})
+        exp_html = exp_df.to_html(index=False, classes='dataframe', border=1)
+        
         # Visualize the explanation
-        buffer1 = io.BytesIO()
-        plt.figure(figsize=(14, 6))  # Set a larger figure size
-        lime_explanation.as_pyplot_figure()
-        plt.show()
-        plt.savefig(buffer1, format='png')
-        plt.close()  # Close the figure to prevent display
-        buffer1.seek(0)  # Reset the buffer pointer
-
         buffer2 = io.BytesIO()
         plt.figure(figsize=(14, 6))  # Set a larger figure size
-        lime_explanation.as_pyplot_figure()
-        plt.show()
-        plt.savefig(buffer2, format='png')
-        plt.close()  # Close the figure to prevent display
+        fig = lime_explanation.as_pyplot_figure()
+        # Adjust the figure size (width=10, height=5 in inches, for example)
+        fig.set_size_inches(16, 6)
+        fig.savefig(buffer2, format='png')
+        plt.close()
         buffer2.seek(0)  # Reset the buffer pointer
 
          # Convert buffers to Base64
-        img1_base64 = base64.b64encode(buffer1.getvalue()).decode('utf-8')
         img2_base64 = base64.b64encode(buffer2.getvalue()).decode('utf-8')
 
-        return img1_base64, img2_base64
+        return exp_html, img2_base64
+    
+
+'''
+        exp = lime_explanation.as_list()
+
+        # Separate features and their effects
+        features, effects = zip(*exp)
+
+        # Convert explanation into a DataFrame for tabular display
+        exp_df = pd.DataFrame({'Feature': features, 'Effect': effects})
+
+        # Create a horizontal bar plot
+        plt.figure(figsize=(8, 6))
+        plt.barh(features, effects, color='skyblue')
+        plt.xlabel('Effect')
+        plt.title('LIME Explanation')
+        plt.gca().invert_yaxis()  # Invert y-axis to match LIME's display order
+        plt.tight_layout()
+
+        # Show the plot
+        plt.show()
+
+        # Print the table
+        print("LIME Explanation Table:")
+        print(exp_df.to_string(index=False))
+
+        # Show the plot
+        plt.show()       
+
+        fig = lime_explanation.as_pyplot_figure()
+
+        # Adjust the figure size (width=10, height=5 in inches, for example)
+        fig.set_size_inches(15, 5)
+'''
 

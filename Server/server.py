@@ -175,7 +175,7 @@ async def sklearn_shap():
 async def sklearn_lime():
     data1, data2 = SklearnProcessor.lime()
     return JSONResponse(content={
-        "img1": f"data:image/png;base64,{data1}",
+        "html1": data1,
         "img2": f"data:image/png;base64,{data2}"
     }
     , status_code=200)
