@@ -14,6 +14,10 @@ function App() {
   const [monthlyImage, setMonthlyImage] = useState('')
   const [quarterlyImage, setQuarterlyImage] = useState('')
 
+  const [Sklearn, setSklearn] = useState(
+    {training_result : ""}
+  )
+
   const API_URL = 'http://127.0.0.1:8000/api'
 
   const handleFileChange = (event :ChangeEvent<HTMLInputElement>) => {
@@ -47,13 +51,11 @@ function App() {
         break;
 
       case 'Time Series Analytics':
-        // Add logic for Time Series Analytics action
         console.log("Performing Time Series Analytics...");
         TimeSeriesAnalysis()
         break;
 
       case 'Train Model':
-        // Add logic for Train Model action
         console.log("Training Model...");
         break;
 
@@ -181,12 +183,12 @@ function App() {
                   </label>
 
                   <select className="select select-success w-full rounded-lg" onChange={handleSelectChange} defaultValue={""} >
-                  <option disabled value="">
-                    Pick Action
-                  </option>
+                    <option disabled value="">
+                      Pick Action
+                    </option>
                   <option value="Upload File">Upload File</option>
                   <option value="Time Series Analytics">Time Series Analytics</option>
-                  <option value="Train Model">Train Model</option>
+                  <option value="Model Training & Evaluation">Model Training & Evaluation</option>
                   </select>
                 </div>
 
@@ -201,6 +203,43 @@ function App() {
                         required/>
                  </div>
                 )}
+
+              {action === 'Model Training & Evaluation' && (
+                <>
+                  <div className="form-control mb-4 w-full transition-all duration-1000 ease-in-out">
+                    <div className="label-text font-semibold  mb-2 mt-4">Select the model</div>
+                    
+                    <select className="select select-success w-full rounded-lg"  defaultValue={""} >
+                        <option disabled value="">
+                          Pick Model
+                        </option>
+                      <option value="Sklearn Gradient Boosting Regressor">Sklearn Gradient Boosting Regressor</option>
+                      <option value="Multi-layer Perceptron regressor">Multi-layer Perceptron regressor</option>
+                      <option value="Arima">Arima/Arimax</option>
+                      <option value="Sarima">Sarima/Sarimax</option>
+                      </select>
+                 </div>
+
+                 <div className="form-control mb-4 w-full transition-all duration-1000 ease-in-out">
+                    <div className="label-text font-semibold  mb-2 mt-4">Options</div>
+                    
+                    <select className="select select-success w-full rounded-lg"  defaultValue={""} >
+                        <option disabled value="">
+                          Select Options
+                        </option>
+                      <option value="Training">Training</option>
+                      <option value="Evaluation">Evaluation</option>
+                      <option value="Feature Importances">Feature Importances</option>
+                      <option value="Shap Values">Shap Values</option>
+                      <option value="Lime">Lime Values</option>
+                      <option value="PredictedValues">Predicted VS Actual Value</option>
+
+                      </select>
+                 </div>
+                
+                </>
+                )}
+
 
                 <div className="form-control transition-all ease-in-out mt-12">
                       <button 
