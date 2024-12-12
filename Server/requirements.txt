@@ -4,3 +4,6 @@ pandas
 python-multipart
 matplotlib
 seaborn
+scikit-learn
+shap
+lime

@@ -24,6 +24,15 @@ class FileDataProcessor:
         g.temp_df['date'] = to_datetime(g.temp_df['date']) # Convert to datetime
         g.temp_df.set_index('date', inplace=True) # Set 'transaction_date' as index
 
+        # Feature engineering: Extract additional features from the date column
+        g.df['month'] = g.df['date'].dt.month
+        g.df['year'] = g.df['date'].dt.year
+        g.df['day_of_week'] = g.df['date'].dt.dayofweek
+        g.df['day_of_month'] = g.df['date'].dt.day
+
+        g.df['gender'] = g.df['gender'].cat.codes
+        g.df['product_category'] = g.df['product_category'].cat.codes
+
         return {"columns": list(g.df.columns), "preview": g.df.head(5).to_dict(orient="records")}
 
     def describe():

@@ -9,6 +9,7 @@ import warnings
 import base64
 import globals as g
 from starlette.middleware.gzip import GZipMiddleware
+from sklearn_gradient import SklearnProcessor
 
 warnings.filterwarnings('ignore')
 
@@ -142,6 +143,42 @@ async def time_series_analyses():
         "quarterly_sales_plot": f"data:image/png;base64,{quarterly_image_base64}"
     })
 
+@router.post("/sklearn_train")
+async def sklearn_train():
+    data = SklearnProcessor.sklearn_training()
+    return JSONResponse(content={
+        "best_parameter": data,
+    }, status_code=200)
+
+@router.get("/sklearn_eval")
+async def sklearn_train():
+    data = SklearnProcessor.model_evaluation()
+    return JSONResponse(content=data
+    , status_code=200)
+
+@router.get("/sklearn_feature_importance")
+async def sklearn_feature_importance():
+    data = SklearnProcessor.feature_importance()
+    return JSONResponse(content=f"data:image/png;base64,{data}"
+    , status_code=200)
+
+@router.get("/sklearn_shap")
+async def sklearn_shap():
+    data1, data2 = SklearnProcessor.shap_value()
+    return JSONResponse(content={
+        "img1": f"data:image/png;base64,{data1}",
+        "img2": f"data:image/png;base64,{data2}"
+    }
+    , status_code=200)
+
+@router.get("/sklearn_lime")
+async def sklearn_lime():
+    data1, data2 = SklearnProcessor.lime()
+    return JSONResponse(content={
+        "img1": f"data:image/png;base64,{data1}",
+        "img2": f"data:image/png;base64,{data2}"
+    }
+    , status_code=200)
 
 @router.get('/plot/')
 async def send_plot_as_html() -> HTMLResponse:
