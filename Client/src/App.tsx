@@ -15,8 +15,11 @@ function App() {
   const [quarterlyImage, setQuarterlyImage] = useState('')
 
   const [Sklearn, setSklearn] = useState(
-    {training_result : ""}
+    {training_result : "", evaluation: "", feature_importance:"", shap: {img1:"", img2:""}, lime: {img1:"", img2:""}}
   )
+
+  const [modelAction, setModelAction] = useState("")
+  const [optionAction, setOptionAction] = useState("")
 
   const API_URL = 'http://127.0.0.1:8000/api'
 
@@ -38,6 +41,145 @@ function App() {
     setAction(selectedValue)
     console.log('Selected Action:', selectedValue); // Log the selected value
   };
+  
+  const handleModelChange = (event :ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = event.target.value;
+    setModelAction(selectedValue)
+    console.log('Selected Action:', selectedValue); // Log the selected value
+  };
+
+  const handleOptionChange = (event :ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = event.target.value;
+    setOptionAction(selectedValue)
+    console.log('Selected Action:', selectedValue); // Log the selected value
+  };
+
+  // Sklearn Gradient Boosting Regressor
+  const sklearnTrain = async () => {
+    setIsLoading(true)
+    try {
+      const data = await fetchData(`${API_URL}/sklearn_train`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+  
+      // Handle response
+      if (data) {
+        console.log("Succesfully Train", data);
+        const sklearn_data = Sklearn
+        sklearn_data.training_result = data.best_parameter
+        setSklearn(sklearn_data)
+        console.log(sklearn_data)
+        setIsLoading(false); 
+      } 
+    } catch (error) {
+      console.error("Error during Training", error);
+      setIsLoading(false); 
+    }
+  }
+
+  const sklearnEvaluation = async () => {
+    setIsLoading(true)
+    try {
+      const data = await fetchData(`${API_URL}/sklearn_eval`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+  
+      // Handle response
+      if (data) {
+        console.log("Succesfully Eval", data);
+        const sklearn_data = Sklearn
+        sklearn_data.evaluation = data.evaluation
+        setSklearn(sklearn_data)
+        console.log(sklearn_data)
+        setIsLoading(false); 
+      } 
+    } catch (error) {
+      console.error("Error during Training", error);
+      setIsLoading(false); 
+    }
+  }
+  
+  const sklearnFeatureImportance = async () => {
+    setIsLoading(true)
+    try {
+      const data = await fetchData(`${API_URL}/sklearn_feature_importance`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+  
+      // Handle response
+      if (data) {
+        console.log("Succesfully Eval", data);
+        const sklearn_data = Sklearn
+        sklearn_data.feature_importance = data
+        setSklearn(sklearn_data)
+        console.log(sklearn_data)
+        setIsLoading(false); 
+      } 
+    } catch (error) {
+      console.error("Error during Training", error);
+      setIsLoading(false); 
+    }
+  }
+
+  const sklearnShapValues = async () => {
+    setIsLoading(true)
+    try {
+      const data = await fetchData(`${API_URL}/sklearn_shap`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+  
+      // Handle response
+      if (data) {
+        console.log("Succesfully Shap", data);
+        const sklearn_data = Sklearn
+        sklearn_data.shap = data
+        setSklearn(sklearn_data)
+        console.log(sklearn_data)
+        setIsLoading(false); 
+      } 
+    } catch (error) {
+      console.error("Error during Training", error);
+      setIsLoading(false); 
+    }
+  }
+
+  
+  const sklearnLimeValues = async () => {
+    setIsLoading(true)
+    try {
+      const data = await fetchData(`${API_URL}/sklearn_lime`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+  
+      // Handle response
+      if (data) {
+        console.log("Succesfully Lime", data);
+        const sklearn_data = Sklearn
+        sklearn_data.lime = data
+        setSklearn(sklearn_data)
+        console.log(sklearn_data)
+        setIsLoading(false); 
+      } 
+    } catch (error) {
+      console.error("Error during Training", error);
+      setIsLoading(false); 
+    }
+  }
 
   const HandleSubmit = () => {
     switch (action) {
@@ -55,8 +197,21 @@ function App() {
         TimeSeriesAnalysis()
         break;
 
-      case 'Train Model':
-        console.log("Training Model...");
+      case 'Model Training & Evaluation':
+        if (modelAction === 'Sklearn Gradient Boosting Regressor') 
+        {
+          if (optionAction === 'Training') {
+            sklearnTrain()
+          } else if (optionAction == 'Evaluation') {
+            sklearnEvaluation()
+          } else if (optionAction == 'Feature Importances') {
+            sklearnFeatureImportance()
+          } else if (optionAction == 'Shap Values') {
+            sklearnShapValues()
+          } else if (optionAction == 'Lime') {
+            sklearnLimeValues()
+          }
+        }
         break;
 
       default:
@@ -209,7 +364,7 @@ function App() {
                   <div className="form-control mb-4 w-full transition-all duration-1000 ease-in-out">
                     <div className="label-text font-semibold  mb-2 mt-4">Select the model</div>
                     
-                    <select className="select select-success w-full rounded-lg"  defaultValue={""} >
+                    <select className="select select-success w-full rounded-lg" onChange={handleModelChange}  defaultValue={""} >
                         <option disabled value="">
                           Pick Model
                         </option>
@@ -223,7 +378,7 @@ function App() {
                  <div className="form-control mb-4 w-full transition-all duration-1000 ease-in-out">
                     <div className="label-text font-semibold  mb-2 mt-4">Options</div>
                     
-                    <select className="select select-success w-full rounded-lg"  defaultValue={""} >
+                    <select className="select select-success w-full rounded-lg"  onChange={handleOptionChange} defaultValue={""} >
                         <option disabled value="">
                           Select Options
                         </option>
@@ -233,10 +388,8 @@ function App() {
                       <option value="Shap Values">Shap Values</option>
                       <option value="Lime">Lime Values</option>
                       <option value="PredictedValues">Predicted VS Actual Value</option>
-
                       </select>
                  </div>
-                
                 </>
                 )}
 
@@ -253,7 +406,7 @@ function App() {
             </div>
         </div>
         
-        { action === 'Upload File' && (
+        { action === 'Upload File' && htmlContent && (
           <>
           <div className='font-semibold mt-8 text-center text-gray-600 underline'>   File summary  </div>
           <div
@@ -283,9 +436,128 @@ function App() {
       </div>
     )}
 
+    {action === 'Model Training & Evaluation' && modelAction === 'Sklearn Gradient Boosting Regressor' &&
+      (optionAction === 'Training' && Sklearn.training_result !== "" && (
+        <>
+        <div className='text-center font-semibold text-gray-400 underline mt-4'>Best Parameters</div>
+        <div className="flex justify-center">
+          <div className="w-96 mt-6 items-center text-center">
+            <table className="table w-full">
+              <thead>
+              <tr className="bg-[#f2f2f2]">
+                <th className="border border-gray-300 px-4 py-2 text-left">Property</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Value</th>
+              </tr>
+              </thead>
+              <tbody>
+                {Object.entries(Sklearn.training_result).map(([key, value]) => (
+                  <tr key={key}>
+                    <td className="border border-gray-300 px-4 py-2 text-left">{key}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-left">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </>
+      ))
+    }
 
+  {action === 'Model Training & Evaluation' && modelAction === 'Sklearn Gradient Boosting Regressor' &&
+      (optionAction === 'Evaluation' && Sklearn.evaluation !== "" && (
+        <>
+        <div className='text-center font-semibold text-gray-400 underline mt-4'>Model Evaluation</div>
+        <div className="flex justify-center">
+          <div className="w-96 mt-6 items-center text-center">
+            <table className="table w-full">
+              <thead>
+              <tr className="bg-[#f2f2f2]">
+                <th className="border border-gray-300 px-4 py-2 text-left">Property</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Value</th>
+              </tr>
+              </thead>
+              <tbody>
+                {Object.entries(Sklearn.evaluation).map(([key, value]) => (
+                  <tr key={key}>
+                    <td className="border border-gray-300 px-4 py-2 text-left">{key}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-left">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </>
+      ))
+    }
 
+    {action === 'Model Training & Evaluation' && modelAction === 'Sklearn Gradient Boosting Regressor' &&
+        (optionAction === 'Feature Importances' && Sklearn.feature_importance !== "" && (
+          <>
+          <div className='text-center font-semibold text-gray-400 underline mt-4'>Feature Importance</div>
+            <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+              <img
+                src={Sklearn.feature_importance}
+                alt="Feature Importance"
+                className="flex-grow max-w-[45%] object-contain"
+              />
+          </div>
+          </>
+        ))
+      }
 
+    {action === 'Model Training & Evaluation' && modelAction === 'Sklearn Gradient Boosting Regressor' &&
+        (optionAction === 'Shap Values' && Sklearn.shap.img1 != "" && (
+          <>
+          <div className='text-center font-semibold text-gray-400 underline mt-4'>Shap Values</div>
+            <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+              {Sklearn.shap.img1 &&
+                <img
+                  src={Sklearn.shap.img1}
+                  alt="Shap Values1"
+                  className="flex-grow max-w-[45%] object-contain"
+                />
+              }
+              {Sklearn.shap.img2 &&
+                <img
+                  src={Sklearn.shap.img2}
+                  alt="Shap Values2"
+                  className="flex-grow max-w-[45%] object-contain"
+                />
+              }
+          </div>
+          </>
+        ))
+      }
+
+{action === 'Model Training & Evaluation' && modelAction === 'Sklearn Gradient Boosting Regressor' &&
+        (optionAction === 'Lime' && Sklearn.lime.img1 != "" && (
+          <>
+          <div className='text-center font-semibold text-gray-400 underline mt-4'>Lime Values</div>
+            <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+              {Sklearn.lime.img1 &&
+                <img
+                  src={Sklearn.lime.img1}
+                  alt="lime Values1"
+                  className="flex-grow max-w-[45%] object-contain"
+                />
+              }
+              {Sklearn.lime.img2 &&
+                <img
+                  src={Sklearn.lime.img2}
+                  alt="lime Values2"
+                  className="flex-grow max-w-[45%] object-contain"
+                />
+              }
+          </div>
+          </>
+        ))
+      }
+
+      <div className='h-6'>
+        
+      </div>
       </div>
     </>
   )
