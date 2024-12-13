@@ -2,7 +2,7 @@
 import { useState, ChangeEvent , useRef} from 'react'
 import Navbar from './Components/Navbar'
 import { fetchData } from './Utils/Fetch'
-import { sklearnTrain, sklearnEvaluation, sklearnFeatureImportance, sklearnLimeValues, sklearnShapValues } from './SklearnGB';
+import { sklearnTrain, sklearnEvaluation, sklearnFeatureImportance, sklearnLimeValues, sklearnShapValues, sklearnPredictedGraph } from './SklearnGB';
 
 function App() {
   const isUploadedRef = useRef(false);
@@ -20,7 +20,7 @@ function App() {
 
   // Sklearn Gradient Boosting
   const [Sklearn, setSklearn] = useState(
-    {training_result : "", evaluation: "", feature_importance:"", shap: {img1:"", img2:""}, lime: {html1:"", img2:""}}
+    {training_result : "", evaluation: "", feature_importance:"", shap: {img1:"", img2:""}, lime: {html1:"", img2:""}, predicted: ""}
   )
 
   // Model Type
@@ -112,6 +112,12 @@ function App() {
             const data = await sklearnLimeValues()
             const sklearn_data = Sklearn
             sklearn_data.lime = data
+            setSklearn(sklearn_data)
+          } 
+          else if (optionAction == 'PredictedValues') {
+            const data = await sklearnPredictedGraph()
+            const sklearn_data = Sklearn
+            sklearn_data.predicted = data
             setSklearn(sklearn_data)
           }
         }
@@ -447,6 +453,21 @@ function App() {
             )}
             </>
           )}
+
+        {optionAction === 'PredictedValues' && Sklearn.predicted !== "" && (
+            <>
+              <div className='text-center font-semibold text-gray-400 underline mt-4'>Predicted VS Actual Values</div>
+                <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+                  <img
+                    src={Sklearn.predicted}
+                    alt="Predicted VS Actual Values"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+              </div>
+            </>
+            )}
+
+
         </>
       )}
       <div className='h-6'>

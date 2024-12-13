@@ -180,6 +180,12 @@ async def sklearn_lime():
     }
     , status_code=200)
 
+@router.get("/sklearn_predict")
+async def sklearn_predict():
+    data = SklearnProcessor.predicted()
+    return JSONResponse(content=f"data:image/png;base64,{data}"
+    , status_code=200)
+
 @router.get('/plot/')
 async def send_plot_as_html() -> HTMLResponse:
     """

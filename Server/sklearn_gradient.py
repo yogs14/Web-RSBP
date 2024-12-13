@@ -180,6 +180,38 @@ class SklearnProcessor:
 
         return exp_html, img2_base64
     
+    def predicted():
+        # Create a DataFrame for plotting
+        X = g.df[['month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'quantity', 'price_per_unit']]
+        y = g.df['total_amount']
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        instance = X_test.iloc[0]
+
+        y_pred = g.sklearn_model.predict(X_test)
+        plot_df = pd.DataFrame({'Year-Month': pd.to_datetime(X_test['year'].astype(str) + '-' + X_test['month'].astype(str), format='%Y-%m'),
+                            'Actual': y_test,
+                            'Predicted': y_pred})
+
+        # Group by 'Year-Month' and get the mean for visualization
+        plot_df = plot_df.groupby('Year-Month').mean()
+
+        # Plotting without grouping
+        buffer = io.BytesIO()
+        plt.figure(figsize=(15, 6))
+        plt.scatter(plot_df.index, plot_df['Actual'], label='Actual Sales', marker='o', alpha=0.5)  # Scatter plot for actual
+        plt.plot(plot_df.index, plot_df['Predicted'], label='Predicted Sales', linestyle='-', color='red')  # Line plot for predicted
+        plt.xlabel('Year-Month')
+        plt.ylabel('Sales Amount')
+        plt.title('Actual vs. Predicted Sales Over Time')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(buffer, format='png')
+        plt.close()  # Close the figure to prevent display
+        buffer.seek(0)  # Reset the buffer pointer
+
+        img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+        return img_base64
 
 '''
         exp = lime_explanation.as_list()

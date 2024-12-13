@@ -133,3 +133,29 @@ export const sklearnLimeValues = async () => {
       //setIsLoading(false); 
     }
   }
+
+  export const sklearnPredictedGraph = async () => {
+    //setIsLoading(true)
+    try {
+      const data = await fetchData(`${API_URL}/sklearn_predict`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+  
+      // Handle response
+      if (data) {
+        console.log("Succesfully Predicted", data);
+        return data
+        //const sklearn_data = Sklearn
+        //sklearn_data.lime = data
+        //setSklearn(sklearn_data)
+        //console.log(sklearn_data)
+        //setIsLoading(false); 
+      } 
+    } catch (error) {
+      console.error("Error during Training", error);
+      //setIsLoading(false); 
+    }
+  }
