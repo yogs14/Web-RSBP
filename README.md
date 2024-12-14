@@ -1,6 +1,9 @@
+<div align="center">
+    <h1>RSBP-A Web Application By Group 2</h1>
+</div>
+
 ## License
 **The Frontend / Web Client code is Licensed Under** [Mozilla Public License Version 2.0](https://choosealicense.com/licenses/)
-
 **The Server / Backend code is Licensed Under** [GNU General Public License Version 3.0](https://choosealicense.com/licenses/)
 
 ## Contributor
