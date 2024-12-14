@@ -4,6 +4,7 @@
 
 ## License
 **The Frontend / Web Client code is Licensed Under** [Mozilla Public License Version 2.0](https://choosealicense.com/licenses/)
+
 **The Server / Backend code is Licensed Under** [GNU General Public License Version 3.0](https://choosealicense.com/licenses/)
 
 ## Contributor
@@ -14,6 +15,7 @@ List of Individuals that have contributed for the development of **Web App** in 
 ## Installation
 ```shell
 git clone https://github.com/kisenaa/Web-RSBP.git
+
 # client / frontend
 cd <cloned_directory/client>
 npm install -g pnpm
