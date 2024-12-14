@@ -3,6 +3,8 @@ import { useState, ChangeEvent , useRef} from 'react'
 import Navbar from './Components/Navbar'
 import { fetchData } from './Utils/Fetch'
 import { sklearnTrain, sklearnEvaluation, sklearnFeatureImportance, sklearnLimeValues, sklearnShapValues, sklearnPredictedGraph } from './SklearnGB';
+import { mlpEvaluation, mlpFeatureImportance, mlpLimeValues, mlpPredictedGraph, mlpShapValues, mlpTrain } from './MLP';
+import { ArimaData, ArimaForecast, ArimaPlot, ArimaTrain } from './Arima';
 
 function App() {
   const isUploadedRef = useRef(false);
@@ -23,10 +25,24 @@ function App() {
     {training_result : "", evaluation: "", feature_importance:"", shap: {img1:"", img2:""}, lime: {html1:"", img2:""}, predicted: ""}
   )
 
+  // MLP 
+  const [mlp, setMLP] = useState(
+    {training_result : "", evaluation: "", feature_importance:"", shap: {img1:"", img2:""}, lime: {html1:"", img2:""}, predicted: ""}
+  )
+
+    // MLP 
+    const [arima, setArima] = useState(
+      {data_monthly_avg : "", data_quantity_demand:"", train: {t1:"", t2:""}, plot:{p1:"", p2:""}, forecast1:{data1:"", img1:""}, forecast2:{data1:"", img1:""}}
+    )
+  
+
   // Model Type
   const [modelAction, setModelAction] = useState("")
   // Option Type
   const [optionAction, setOptionAction] = useState("")
+
+  // Time Series option
+  const [timeSeriesOption, setTimeSeriesOption] = useState("")
 
   const API_URL = 'http://127.0.0.1:8000/api'
 
@@ -58,6 +74,12 @@ function App() {
   const handleOptionChange = (event :ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = event.target.value;
     setOptionAction(selectedValue)
+    console.log('Selected Action:', selectedValue);
+  };
+
+  const handleTimeSeriesOptionChange = (event :ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = event.target.value;
+    setTimeSeriesOption(selectedValue)
     console.log('Selected Action:', selectedValue);
   };
 
@@ -120,7 +142,84 @@ function App() {
             sklearn_data.predicted = data
             setSklearn(sklearn_data)
           }
-        }
+        } else if (modelAction === 'Multi-layer Perceptron regressor') 
+          {
+            if (optionAction === 'Training') {
+              const data = await mlpTrain();
+              const mlp_data = mlp
+              mlp_data.training_result = data.best_parameter
+              setMLP(mlp_data)
+            } 
+            else if (optionAction === 'Evaluation') {
+              const data = await mlpEvaluation()
+              const mlp_data = mlp
+              mlp_data.evaluation = data.evaluation
+              setMLP(mlp_data)
+            } 
+            else if (optionAction === 'Feature Importances') {
+              const data = await mlpFeatureImportance()
+              const mlp_data = mlp
+              mlp_data.feature_importance = data
+              setMLP(mlp_data)
+            } 
+            else if (optionAction === 'Shap Values') {
+              const data = await mlpShapValues()
+              const mlp_data = mlp
+              mlp_data.shap = data
+              setMLP(mlp_data)
+            } 
+            else if (optionAction === 'Lime') {
+              const data = await mlpLimeValues()
+              const mlp_data = mlp
+              mlp_data.lime = data
+              setMLP(mlp_data)
+            } 
+            else if (optionAction === 'PredictedValues') {
+              const data = await mlpPredictedGraph()
+              const mlp_data = mlp
+              mlp_data.predicted = data
+              setMLP(mlp_data)
+            }
+          } else if (modelAction === 'Arima')
+          {
+            if (optionAction === 'Data Analysis') {
+              const data = await ArimaData(timeSeriesOption)
+              const arima_data = arima
+              if(timeSeriesOption === 'MonthlyAvarage') {
+                arima_data.data_monthly_avg = data
+              } else {
+                arima_data.data_quantity_demand = data
+              }
+              setArima(arima_data)
+            } else if (optionAction === 'Training') {
+              const data = await ArimaTrain(timeSeriesOption)
+              const arima_data = arima
+              if(timeSeriesOption === 'MonthlyAvarage') {
+                arima_data.train.t1 = data
+              } else {
+                arima_data.train.t2  = data
+              }
+              setArima(arima_data)
+            } else if (optionAction === 'Model Graph') {
+              const data = await ArimaPlot(timeSeriesOption)
+              const arima_data = arima
+              if(timeSeriesOption === 'MonthlyAvarage') {
+                arima_data.plot.p1 = data
+              } else {
+                arima_data.plot.p2  = data
+              }
+              setArima(arima_data)
+            } else if (optionAction === 'Forecasting') {
+              const data = await ArimaForecast(timeSeriesOption)
+              const arima_data = arima
+              if(timeSeriesOption === 'MonthlyAvarage') {
+                arima_data.forecast1 = data
+              } else {
+                arima_data.forecast2 = data
+              }
+              setArima(arima_data)
+            }
+          }
         setIsLoading(false)
         break;
 
@@ -278,6 +377,20 @@ function App() {
                         </select>
                     </div>
 
+                    {(modelAction === "Arima" || modelAction === 'Sarima') && (
+                      <div className="form-control mb-4 w-full transition-all duration-1000 ease-in-out">
+                        <div className="label-text font-semibold  mb-2 mt-4">Pick the data</div>
+                        
+                        <select className="select select-success w-full rounded-lg" onChange={handleTimeSeriesOptionChange}  defaultValue={""} >
+                            <option disabled value="">
+                              Pick Data
+                            </option>
+                          <option value="MonthlyAvarage">Avarage Monthly Sales</option>
+                          <option value="QuantityDemand">Quantity / Demand</option>
+                          </select>
+                    </div>
+                    )}
+
                     <div className="form-control mb-4 w-full transition-all duration-1000 ease-in-out">
                       <div className="label-text font-semibold  mb-2 mt-4">Options</div>
                       
@@ -285,12 +398,24 @@ function App() {
                           <option disabled value="">
                             Select Options
                           </option>
-                        <option value="Training">Training</option>
-                        <option value="Evaluation">Evaluation</option>
-                        <option value="Feature Importances">Feature Importances</option>
-                        <option value="Shap Values">Shap Values</option>
-                        <option value="Lime">Lime Values</option>
-                        <option value="PredictedValues">Predicted VS Actual Value</option>
+                        {modelAction !== 'Arima' && modelAction !== 'Sarima' && (
+                            <>
+                            <option value="Training">Training</option>
+                            <option value="Evaluation">Evaluation</option>
+                            <option value="Feature Importances">Feature Importances</option>
+                            <option value="Shap Values">Shap Values</option>
+                            <option value="Lime">Lime Values</option>
+                            <option value="PredictedValues">Predicted VS Actual Value</option>
+                            </>
+                        )}
+                        {(modelAction === "Arima" || modelAction === 'Sarima') && (
+                          <>
+                            <option value="Data Analysis">Data Analysis</option>
+                            <option value="Training">Training</option>
+                            <option value="Model Graph">Model Graph</option>
+                            <option value="Forecasting">Forecasting</option>
+                          </>
+                        )}
                         </select>
                     </div>
                   </>
@@ -451,23 +576,306 @@ function App() {
             </div>
             </>
             )}
+
+          {optionAction === 'PredictedValues' && Sklearn.predicted !== "" && (
+              <>
+                <div className='text-center font-semibold text-gray-400 underline mt-4'>Predicted VS Actual Values</div>
+                  <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+                    <img
+                      src={Sklearn.predicted} alt="Predicted VS Actual Values"
+                      className="flex-grow max-w-[45%] object-contain"
+                    />
+                </div>
+              </>
+              )}
             </>
           )}
 
-        {optionAction === 'PredictedValues' && Sklearn.predicted !== "" && (
+        {modelAction === 'Multi-layer Perceptron regressor' && (
             <>
-              <div className='text-center font-semibold text-gray-400 underline mt-4'>Predicted VS Actual Values</div>
+              {optionAction === 'Training' && mlp.training_result !== "" && (
+                <>
+                <div className='text-center font-semibold text-gray-400 underline mt-4'>Best Parameters</div>
+                <div className="flex justify-center">
+                  <div className="w-96 mt-6 items-center text-center">
+                    <table className="table w-full">
+                      <thead>
+                      <tr className="bg-[#f2f2f2]">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Property</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Value</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(mlp.training_result).map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{key}</td>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                </>
+              )}
+
+              {optionAction === 'Evaluation' && mlp.evaluation !== "" && (
+              <>
+                <div className='text-center font-semibold text-gray-400 underline mt-4'>Model Evaluation</div>
+                <div className="flex justify-center">
+                  <div className="w-96 mt-6 items-center text-center">
+                    <table className="table w-full">
+                      <thead>
+                      <tr className="bg-[#f2f2f2]">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Property</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Value</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(mlp.evaluation).map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{key}</td>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>              
+            )}
+
+            {optionAction === 'Feature Importances' && mlp.feature_importance !== "" && (
+            <>
+              <div className='text-center font-semibold text-gray-400 underline mt-4'>Feature Importance</div>
                 <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
                   <img
-                    src={Sklearn.predicted}
-                    alt="Predicted VS Actual Values"
+                    src={mlp.feature_importance}
+                    alt="Feature Importance"
                     className="flex-grow max-w-[45%] object-contain"
                   />
               </div>
             </>
             )}
 
+          {optionAction === 'Shap Values' && mlp.shap.img1 != "" && (
+            <>
+              <div className='text-center font-semibold text-gray-400 underline mt-4'>Shap Values</div>
+                <div className="flex flex-col lg:flex-row mt-8 justify-center items-center">
+                  {mlp.shap.img1 &&
+                    <img
+                      src={mlp.shap.img1}
+                      alt="Shap Values1"
+                      className="flex-grow lg:max-w-[44%] object-contain px-2"
+                    />
+                  }
+                  {mlp.shap.img2 &&
+                    <img
+                      src={mlp.shap.img2}
+                      alt="Shap Values2"
+                      className="flex-grow lg:max-w-[44%] object-contain"
+                      style={{ transform: 'scale(0.7)' }}
 
+                    />
+                  }
+              </div>
+            </>
+            )}
+
+            {optionAction === 'Lime' && mlp.lime.img2 != ""  && (
+                <>
+                <div className='text-center font-semibold text-gray-400 underline mt-4'>Lime Values</div>
+                  <div className="flex flex-col lg:flex-row gap-8 mt-8 justify-center items-center">
+                    {mlp.lime.html1 &&
+                      <div
+                      className='max-w-[48%] gap-2 xl:w-96'
+                      dangerouslySetInnerHTML={{ __html: mlp.lime.html1 }}
+                      />
+                    }
+                    {mlp.lime.img2 &&
+                      <img
+                        src={mlp.lime.img2}
+                        alt="lime Values2"
+                        className="flex-grow max-w-[45%] object-contain"
+                      />
+                    }
+                </div>
+                </>
+                )}
+
+          {optionAction === 'PredictedValues' && mlp.predicted !== "" && (
+              <>
+                <div className='text-center font-semibold text-gray-400 underline mt-4'>Predicted VS Actual Values</div>
+                  <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+                    <img
+                      src={mlp.predicted} alt="Predicted VS Actual Values"
+                      className="flex-grow max-w-[45%] object-contain"
+                    />
+                </div>
+              </>
+              )}
+            </>
+          )}
+
+        {modelAction === 'Arima' && (
+            <>
+              {optionAction == 'Data Analysis' && timeSeriesOption == 'MonthlyAvarage' && arima.data_monthly_avg !== "" && (
+                <>
+                <div className='font-semibold mt-8 text-center text-gray-600 underline'>   File summary  </div>
+                  <div className='flex justify-center'>
+                    <div className="w-96 lg:w-[30rem] mt-6 items-center text-center">
+                      <div
+                      className="mt-6 px-6 overflow-x-auto min-w-full"
+                      dangerouslySetInnerHTML={{ __html: arima.data_monthly_avg }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {optionAction == 'Data Analysis' && timeSeriesOption == 'QuantityDemand' && arima.data_quantity_demand !== "" && (
+                <>
+                  <div className='font-semibold mt-8 text-center text-gray-600 underline'>   File summary  </div>
+                  <div className='flex justify-center'>
+                    <div className="w-96 lg:w-[30rem] mt-6 items-center text-center">
+                      <div
+                      className="mt-6 px-6 overflow-x-auto min-w-full"
+                      dangerouslySetInnerHTML={{ __html: arima.data_quantity_demand }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {optionAction == 'Training' && timeSeriesOption == 'MonthlyAvarage' && arima.train.t1 !== "" && (
+                <>
+                <div className='font-semibold mt-8 text-center text-gray-600 underline'> Arimax Model Summary (seasonality (m) = 1) </div>
+                  <div className='flex justify-center items-center mt-3'>
+                    <div
+                      className='border-2 border-solid border-gray-400 p-2'
+                      dangerouslySetInnerHTML={{ __html: arima.train.t1 }}
+                      />
+                  </div>
+                </>
+              )}
+
+            {optionAction == 'Training' && timeSeriesOption == 'QuantityDemand' && arima.train.t2 !== "" && (
+                <>
+                <div className='font-semibold mt-8 text-center text-gray-600 underline'> Arimax Model Summary (seasonality (m) = 1) </div>
+                  <div className='flex justify-center items-center mt-3'>
+                    <div
+                      className='border-2 border-solid border-gray-400 p-2'
+                      dangerouslySetInnerHTML={{ __html: arima.train.t2 }}
+                      />
+                  </div>
+                </>
+              )}
+
+          {optionAction === 'Model Graph' && timeSeriesOption == 'MonthlyAvarage' && arima.plot.p1 !== "" && (
+            <>
+              <div className='text-center font-semibold text-gray-400 underline mt-4'>Model Graph</div>
+                <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+                  <img
+                    src={arima.plot.p1}
+                    alt="graph"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+              </div>
+            </>
+            )}
+
+        {optionAction === 'Model Graph' && timeSeriesOption == 'QuantityDemand' && arima.plot.p2 !== "" && (
+            <>
+              <div className='text-center font-semibold text-gray-400 underline mt-4'>Model Graph</div>
+                <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+                  <img
+                    src={arima.plot.p2}
+                    alt="graph"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+              </div>
+            </>
+            )}
+
+          {optionAction === 'Forecasting' && timeSeriesOption == 'MonthlyAvarage' && arima.forecast1.img1 !== ""  && (
+            <>
+            <div className='text-center font-semibold text-gray-400 underline mt-4'>Arima Forecasting</div>
+              <div className="flex flex-col lg:flex-row gap-4 mt-8 justify-center items-center">
+                {arima.forecast1.img1 &&
+                  <img
+                    src={arima.forecast1.img1}
+                    alt="arima forecast"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+                }
+
+                {arima.forecast1.data1 &&
+                  <div className="flex justify-center">
+                  <div className="w-96 mt-6 items-center text-center">
+                    <table className="table w-full">
+                      <thead>
+                      <tr className="bg-[#f2f2f2]">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Property</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Value</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(arima.forecast1.data1).map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{key}</td>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                }
+            </div>
+            </>
+          )}
+
+        {optionAction === 'Forecasting' && timeSeriesOption == 'QuantityDemand' && arima.forecast2.img1 !== ""  && (
+            <>
+            <div className='text-center font-semibold text-gray-400 underline mt-4'>Arima Forecasting</div>
+              <div className="flex flex-col lg:flex-row gap-4 mt-8 justify-center items-center">
+                {arima.forecast2.img1 &&
+                  <img
+                    src={arima.forecast2.img1}
+                    alt="arima forecast"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+                }
+
+                {arima.forecast2.data1 &&
+                  <div className="flex justify-center">
+                  <div className="w-96 mt-6 items-center text-center">
+                    <table className="table w-full">
+                      <thead>
+                      <tr className="bg-[#f2f2f2]">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Property</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Value</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(arima.forecast2.data1).map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{key}</td>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                }
+            </div>
+            </>
+          )}
+
+            </>
+          )}
+          
         </>
       )}
       <div className='h-6'>

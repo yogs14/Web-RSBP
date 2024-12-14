@@ -10,8 +10,11 @@ import base64
 import globals as g
 from starlette.middleware.gzip import GZipMiddleware
 from sklearn_gradient import SklearnProcessor
+from MLP import MultiLayerPerceptronProccessor
+from Arima import ArimaProcessor
 
 warnings.filterwarnings('ignore')
+plt.switch_backend('agg')
 
 app = FastAPI()
 router = APIRouter()
@@ -38,7 +41,7 @@ async def dispatch(request: Request, call_next):
 async def message():
     return {"message": "Hello Word"}
 
-@router.post("/upload_file/")
+@router.post("/upload_file/", tags=["General"])
 async def upload_csv(file: UploadFile = File(...)):
     """
     Upload a CSV file and process it.
@@ -49,7 +52,7 @@ async def upload_csv(file: UploadFile = File(...)):
     contents = await file.read()
     return FileDataProcessor.process(contents)
 
-@router.get("/describe_csv/")
+@router.get("/describe_csv/", tags=["General"])
 async def describe_csv() -> HTMLResponse:
     """
     Upload a CSV file and return the describe() output as an HTML table.
@@ -59,7 +62,7 @@ async def describe_csv() -> HTMLResponse:
     
     return HTMLResponse(content=describe_html, status_code=200)
     
-@router.get("/csv_detail/")
+@router.get("/csv_detail/", tags=["General"])
 async def upload_csv_html() -> HTMLResponse:
     """
     Upload a CSV file and return the describe() output as an HTML table.
@@ -95,7 +98,7 @@ async def upload_csv_html() -> HTMLResponse:
     """
     return HTMLResponse(content=html_content, status_code=200)
 
-@router.get('/time_series_analysis/')
+@router.get('/time_series_analysis/', tags=["General"])
 async def time_series_analyses():
     # Create a BytesIO buffer for monthly plot
     monthly_buf = io.BytesIO()
@@ -143,26 +146,26 @@ async def time_series_analyses():
         "quarterly_sales_plot": f"data:image/png;base64,{quarterly_image_base64}"
     })
 
-@router.post("/sklearn_train")
+@router.post("/sklearn_train", tags=["Sklearn Gradient Boosting"])
 async def sklearn_train():
     data = SklearnProcessor.sklearn_training()
     return JSONResponse(content={
         "best_parameter": data,
     }, status_code=200)
 
-@router.get("/sklearn_eval")
-async def sklearn_train():
+@router.get("/sklearn_eval", tags=["Sklearn Gradient Boosting"])
+async def sklearn_eval():
     data = SklearnProcessor.model_evaluation()
     return JSONResponse(content=data
     , status_code=200)
 
-@router.get("/sklearn_feature_importance")
+@router.get("/sklearn_feature_importance", tags=["Sklearn Gradient Boosting"])
 async def sklearn_feature_importance():
     data = SklearnProcessor.feature_importance()
     return JSONResponse(content=f"data:image/png;base64,{data}"
     , status_code=200)
 
-@router.get("/sklearn_shap")
+@router.get("/sklearn_shap", tags=["Sklearn Gradient Boosting"])
 async def sklearn_shap():
     data1, data2 = SklearnProcessor.shap_value()
     return JSONResponse(content={
@@ -171,7 +174,7 @@ async def sklearn_shap():
     }
     , status_code=200)
 
-@router.get("/sklearn_lime")
+@router.get("/sklearn_lime", tags=["Sklearn Gradient Boosting"])
 async def sklearn_lime():
     data1, data2 = SklearnProcessor.lime()
     return JSONResponse(content={
@@ -180,13 +183,84 @@ async def sklearn_lime():
     }
     , status_code=200)
 
-@router.get("/sklearn_predict")
+@router.get("/sklearn_predict", tags=["Sklearn Gradient Boosting"])
 async def sklearn_predict():
     data = SklearnProcessor.predicted()
     return JSONResponse(content=f"data:image/png;base64,{data}"
     , status_code=200)
 
-@router.get('/plot/')
+
+@router.post("/mlp_train", tags=["Multi Layer"])
+async def mlp_train():
+    data = MultiLayerPerceptronProccessor.mlp_training()
+    return JSONResponse(content={
+        "best_parameter": data,
+    }, status_code=200)
+
+@router.get("/mlp_eval", tags=["Multi Layer"])
+async def mlp_eval():
+    data = MultiLayerPerceptronProccessor.model_evaluation()
+    return JSONResponse(content=data
+    , status_code=200)
+
+@router.get("/mlp_feature_importance", tags=["Multi Layer"])
+async def mlp_feature_importance():
+    data = MultiLayerPerceptronProccessor.feature_importance()
+    return JSONResponse(content=f"data:image/png;base64,{data}"
+    , status_code=200)
+
+@router.get("/mlp_shap", tags=["Multi Layer"])
+async def mlp_shap():
+    data1, data2 = MultiLayerPerceptronProccessor.shap_value()
+    return JSONResponse(content={
+        "img1": f"data:image/png;base64,{data1}",
+        "img2": f"data:image/png;base64,{data2}"
+    }
+    )
+
+@router.get("/mlp_lime", tags=["Multi Layer"])
+async def mlp_lime():
+    data1, data2 = MultiLayerPerceptronProccessor.lime()
+    return JSONResponse(content={
+        "html1": data1,
+        "img2": f"data:image/png;base64,{data2}"
+    }
+    , status_code=200)
+
+@router.get("/mlp_predict", tags=["Multi Layer"])
+async def mlppredict():
+    data = MultiLayerPerceptronProccessor.predicted()
+    return JSONResponse(content=f"data:image/png;base64,{data}"
+    , status_code=200)
+
+@router.get("/arimax_data/{param}", tags=["Arima/Arimax"])
+async def arima_data(param :str) -> HTMLResponse:
+    describe_html = ArimaProcessor.data(param)
+    
+    return HTMLResponse(content=describe_html, status_code=200)
+
+@router.get("/arimax_train/{param}", tags=["Arima/Arimax"])
+async def arima_train(param :str) -> HTMLResponse:
+    data = ArimaProcessor.train(param)
+    summary_html = f"<pre>{data}</pre>"
+
+    return HTMLResponse(content=summary_html, status_code=200)
+
+@router.get("/arimax_plot/{param}", tags=["Arima/Arimax"])
+async def arima_plot(param :str):
+    data = ArimaProcessor.plot(param)
+    return JSONResponse(content=f"data:image/png;base64,{data}", status_code=200)
+
+@router.get("/arimax_forecast/{param}", tags=["Arima/Arimax"])
+async def mlp_shap(param :str):
+    data1, data2 = ArimaProcessor.forecast(param)
+    return JSONResponse(content={
+        "img1": f"data:image/png;base64,{data1}",
+        "data1": data2
+    }
+    )
+
+@router.get('/plot/', tags=["General"])
 async def send_plot_as_html() -> HTMLResponse:
     """
     Generate a plot and send it as a complete HTML page.
@@ -213,7 +287,7 @@ async def send_plot_as_html() -> HTMLResponse:
 
     # Convert the plot to base64 for embedding in HTML
     plot_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-
+    buf.close()
     # Close the plot to free memory
     plt.close()
 

@@ -1,3 +1,5 @@
+numpy==1.26.4
+pmdarima
 fastapi
 uvicorn[standard]
 pandas
@@ -8,3 +10,4 @@ scikit-learn
 shap
 lime
 ipython
+statsmodels
