@@ -2,9 +2,10 @@
 import { useState, ChangeEvent , useRef} from 'react'
 import Navbar from './Components/Navbar'
 import { fetchData } from './Utils/Fetch'
-import { sklearnTrain, sklearnEvaluation, sklearnFeatureImportance, sklearnLimeValues, sklearnShapValues, sklearnPredictedGraph } from './SklearnGB';
-import { mlpEvaluation, mlpFeatureImportance, mlpLimeValues, mlpPredictedGraph, mlpShapValues, mlpTrain } from './MLP';
-import { ArimaData, ArimaForecast, ArimaPlot, ArimaTrain } from './Arima';
+import { sklearnTrain, sklearnEvaluation, sklearnFeatureImportance, sklearnLimeValues, sklearnShapValues, sklearnPredictedGraph } from './Utils/SklearnGB';
+import { mlpEvaluation, mlpFeatureImportance, mlpLimeValues, mlpPredictedGraph, mlpShapValues, mlpTrain } from './Utils/MLP';
+import { ArimaData, ArimaForecast, ArimaPlot, ArimaTrain } from './Utils/Arima';
+import { SarimaData, SarimaForecast, SarimaPlot, SarimaTrain } from './Utils/Sarima';
 
 function App() {
   const isUploadedRef = useRef(false);
@@ -30,11 +31,15 @@ function App() {
     {training_result : "", evaluation: "", feature_importance:"", shap: {img1:"", img2:""}, lime: {html1:"", img2:""}, predicted: ""}
   )
 
-    // MLP 
-    const [arima, setArima] = useState(
-      {data_monthly_avg : "", data_quantity_demand:"", train: {t1:"", t2:""}, plot:{p1:"", p2:""}, forecast1:{data1:"", img1:""}, forecast2:{data1:"", img1:""}}
-    )
-  
+  // Arima 
+  const [arima, setArima] = useState(
+    {data_monthly_avg : "", data_quantity_demand:"", train: {t1:"", t2:""}, plot:{p1:"", p2:""}, forecast1:{data1:"", img1:""}, forecast2:{data1:"", img1:""}}
+  )
+
+  // Sarima
+  const [sarima, setSarima] = useState(
+    {data_monthly_avg : "", data_quantity_demand:"", train: {t1:"", t2:""}, plot:{p1:"", p2:""}, forecast1:{data1:"", img1:""}, forecast2:{data1:"", img1:""}}
+  )
 
   // Model Type
   const [modelAction, setModelAction] = useState("")
@@ -219,7 +224,46 @@ function App() {
               }
               setArima(arima_data)
             }
-          }
+          } else if (modelAction === 'Sarima')
+            {
+              if (optionAction === 'Data Analysis') {
+                const data = await SarimaData(timeSeriesOption)
+                const sarima_data = sarima
+                if(timeSeriesOption === 'MonthlyAvarage') {
+                  sarima_data.data_monthly_avg = data
+                } else {
+                  sarima_data.data_quantity_demand = data
+                }
+                setSarima(sarima_data)
+              } else if (optionAction === 'Training') {
+                const data = await SarimaTrain(timeSeriesOption)
+                const sarima_data = sarima
+                if(timeSeriesOption === 'MonthlyAvarage') {
+                  sarima_data.train.t1 = data
+                } else {
+                  sarima_data.train.t2  = data
+                }
+                setSarima(sarima_data)
+              } else if (optionAction === 'Model Graph') {
+                const data = await SarimaPlot(timeSeriesOption)
+                const sarima_data = sarima
+                if(timeSeriesOption === 'MonthlyAvarage') {
+                  sarima_data.plot.p1 = data
+                } else {
+                  sarima_data.plot.p2  = data
+                }
+                setSarima(sarima_data)
+              } else if (optionAction === 'Forecasting') {
+                const data = await SarimaForecast(timeSeriesOption)
+                const sarima_data = sarima
+                if(timeSeriesOption === 'MonthlyAvarage') {
+                  sarima_data.forecast1 = data
+                } else {
+                  sarima_data.forecast2 = data
+                }
+                setSarima(sarima_data)
+              }
+            }
         setIsLoading(false)
         break;
 
@@ -872,10 +916,167 @@ function App() {
             </div>
             </>
           )}
-
             </>
           )}
           
+          {modelAction === 'Sarima' && (
+            <>
+              {optionAction == 'Data Analysis' && timeSeriesOption == 'MonthlyAvarage' && sarima.data_monthly_avg !== "" && (
+                <>
+                <div className='font-semibold mt-8 text-center text-gray-600 underline'>   File summary  </div>
+                  <div className='flex justify-center'>
+                    <div className="w-96 lg:w-[30rem] mt-6 items-center text-center">
+                      <div
+                      className="mt-6 px-6 overflow-x-auto min-w-full"
+                      dangerouslySetInnerHTML={{ __html: sarima.data_monthly_avg }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {optionAction == 'Data Analysis' && timeSeriesOption == 'QuantityDemand' && sarima.data_quantity_demand !== "" && (
+                <>
+                  <div className='font-semibold mt-8 text-center text-gray-600 underline'>   File summary  </div>
+                  <div className='flex justify-center'>
+                    <div className="w-96 lg:w-[30rem] mt-6 items-center text-center">
+                      <div
+                      className="mt-6 px-6 overflow-x-auto min-w-full"
+                      dangerouslySetInnerHTML={{ __html: sarima.data_quantity_demand }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {optionAction == 'Training' && timeSeriesOption == 'MonthlyAvarage' && sarima.train.t1 !== "" && (
+                <>
+                <div className='font-semibold mt-8 text-center text-gray-600 underline'> Sarimax Model Summary (seasonality (m) 1) </div>
+                  <div className='flex justify-center items-center mt-3'>
+                    <div
+                      className='border-2 border-solid border-gray-400 p-2'
+                      dangerouslySetInnerHTML={{ __html: sarima.train.t1 }}
+                      />
+                  </div>
+                </>
+              )}
+
+            {optionAction == 'Training' && timeSeriesOption == 'QuantityDemand' && sarima.train.t2 !== "" && (
+                <>
+                <div className='font-semibold mt-8 text-center text-gray-600 underline'> Arimax Model Summary (seasonality (m) 1) </div>
+                  <div className='flex justify-center items-center mt-3'>
+                    <div
+                      className='border-2 border-solid border-gray-400 p-2'
+                      dangerouslySetInnerHTML={{ __html: sarima.train.t2 }}
+                      />
+                  </div>
+                </>
+              )}
+
+          {optionAction === 'Model Graph' && timeSeriesOption == 'MonthlyAvarage' && sarima.plot.p1 !== "" && (
+            <>
+              <div className='text-center font-semibold text-gray-400 underline mt-4'>Model Graph</div>
+                <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+                  <img
+                    src={sarima.plot.p1}
+                    alt="graph"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+              </div>
+            </>
+            )}
+
+        {optionAction === 'Model Graph' && timeSeriesOption == 'QuantityDemand' && sarima.plot.p2 !== "" && (
+            <>
+              <div className='text-center font-semibold text-gray-400 underline mt-4'>Model Graph</div>
+                <div className="flex flex-col lg:flex-row gap-6 mt-8 justify-center items-center">
+                  <img
+                    src={sarima.plot.p2}
+                    alt="graph"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+              </div>
+            </>
+            )}
+
+          {optionAction === 'Forecasting' && timeSeriesOption == 'MonthlyAvarage' && sarima.forecast1.img1 !== ""  && (
+            <>
+            <div className='text-center font-semibold text-gray-400 underline mt-4'>Sarima Forecasting</div>
+              <div className="flex flex-col lg:flex-row gap-4 mt-8 justify-center items-center">
+                {sarima.forecast1.img1 &&
+                  <img
+                    src={sarima.forecast1.img1}
+                    alt="sarima forecast"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+                }
+
+                {sarima.forecast1.data1 &&
+                  <div className="flex justify-center">
+                  <div className="w-96 mt-6 items-center text-center">
+                    <table className="table w-full">
+                      <thead>
+                      <tr className="bg-[#f2f2f2]">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Property</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Value</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(sarima.forecast1.data1).map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{key}</td>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                }
+            </div>
+            </>
+          )}
+
+        {optionAction === 'Forecasting' && timeSeriesOption == 'QuantityDemand' && sarima.forecast2.img1 !== ""  && (
+            <>
+            <div className='text-center font-semibold text-gray-400 underline mt-4'>Sarima Forecasting</div>
+              <div className="flex flex-col lg:flex-row gap-4 mt-8 justify-center items-center">
+                {sarima.forecast2.img1 &&
+                  <img
+                    src={sarima.forecast2.img1}
+                    alt="sarima forecast"
+                    className="flex-grow max-w-[45%] object-contain"
+                  />
+                }
+
+                {sarima.forecast2.data1 &&
+                  <div className="flex justify-center">
+                  <div className="w-96 mt-6 items-center text-center">
+                    <table className="table w-full">
+                      <thead>
+                      <tr className="bg-[#f2f2f2]">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Property</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Value</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(sarima.forecast2.data1).map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{key}</td>
+                            <td className="border border-gray-300 px-4 py-2 text-left">{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                }
+            </div>
+            </>
+          )}
+            </>
+          )}
+
         </>
       )}
       <div className='h-6'>

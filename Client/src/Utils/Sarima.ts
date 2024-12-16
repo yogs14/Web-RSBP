@@ -1,12 +1,12 @@
-import { fetchData } from './Utils/Fetch'
+import { fetchData } from './Fetch'
 
 const API_URL = 'http://127.0.0.1:8000/api'
 
  // Sklearn Gradient Boosting Regressor
-export const ArimaData = async (param: string) => {
+export const SarimaData = async (param: string) => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/arimax_data/${param}`, {
+      const data = await fetchData(`${API_URL}/sarimax_data/${param}`, {
         method: 'GET',
         headers: {
             'Accept': 'text/html',
@@ -31,10 +31,10 @@ export const ArimaData = async (param: string) => {
     }
   }
 
-  export const ArimaTrain = async (param: string) => {
+  export const SarimaTrain = async (param: string) => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/arimax_train/${param}`, {
+      const data = await fetchData(`${API_URL}/sarimax_train/${param}`, {
         method: 'GET',
         headers: {
             'Accept': 'text/html',
@@ -59,10 +59,10 @@ export const ArimaData = async (param: string) => {
     }
   }
 
-  export const ArimaPlot = async (param: string) => {
+  export const SarimaPlot = async (param: string) => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/arimax_plot/${param}`, {
+      const data = await fetchData(`${API_URL}/sarimax_plot/${param}`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -85,10 +85,10 @@ export const ArimaData = async (param: string) => {
     }
   }
 
-  export const ArimaForecast = async (param: string) => {
+  export const SarimaForecast = async (param: string) => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/arimax_forecast/${param}`, {
+      const data = await fetchData(`${API_URL}/sarimax_forecast/${param}`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',

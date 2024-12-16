@@ -1,12 +1,12 @@
-import { fetchData } from './Utils/Fetch'
+import { fetchData } from './Fetch'
 
 const API_URL = 'http://127.0.0.1:8000/api'
 
  // Sklearn Gradient Boosting Regressor
-export const sklearnTrain = async () => {
+export const mlpTrain = async () => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/sklearn_train`, {
+      const data = await fetchData(`${API_URL}/mlp_train`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -29,10 +29,10 @@ export const sklearnTrain = async () => {
     }
   }
 
-  export  const sklearnEvaluation = async () => {
+  export  const mlpEvaluation = async () => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/sklearn_eval`, {
+      const data = await fetchData(`${API_URL}/mlp_eval`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -55,10 +55,10 @@ export const sklearnTrain = async () => {
     }
   }
   
-export const sklearnFeatureImportance = async () => {
+export const mlpFeatureImportance = async () => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/sklearn_feature_importance`, {
+      const data = await fetchData(`${API_URL}/mlp_feature_importance`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -81,10 +81,10 @@ export const sklearnFeatureImportance = async () => {
     }
   }
 
-export const sklearnShapValues = async () => {
+export const mlpShapValues = async () => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/sklearn_shap`, {
+      const data = await fetchData(`${API_URL}/mlp_shap`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -108,10 +108,10 @@ export const sklearnShapValues = async () => {
   }
 
   
-export const sklearnLimeValues = async () => {
+export const mlpLimeValues = async () => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/sklearn_lime`, {
+      const data = await fetchData(`${API_URL}/mlp_lime`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -134,10 +134,10 @@ export const sklearnLimeValues = async () => {
     }
   }
 
-  export const sklearnPredictedGraph = async () => {
+  export const mlpPredictedGraph = async () => {
     //setIsLoading(true)
     try {
-      const data = await fetchData(`${API_URL}/sklearn_predict`, {
+      const data = await fetchData(`${API_URL}/mlp_predict`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',

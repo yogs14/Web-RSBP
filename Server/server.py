@@ -12,6 +12,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from sklearn_gradient import SklearnProcessor
 from MLP import MultiLayerPerceptronProccessor
 from Arima import ArimaProcessor
+from Sarima import SarimaProccessor
 
 warnings.filterwarnings('ignore')
 plt.switch_backend('agg')
@@ -252,13 +253,40 @@ async def arima_plot(param :str):
     return JSONResponse(content=f"data:image/png;base64,{data}", status_code=200)
 
 @router.get("/arimax_forecast/{param}", tags=["Arima/Arimax"])
-async def mlp_shap(param :str):
+async def arima_forecast(param :str):
     data1, data2 = ArimaProcessor.forecast(param)
     return JSONResponse(content={
         "img1": f"data:image/png;base64,{data1}",
         "data1": data2
     }
-    )
+)
+
+@router.get("/sarimax_data/{param}", tags=["Sarima/Sarimax"])
+async def sarima_data(param :str) -> HTMLResponse:
+    describe_html = SarimaProccessor.data(param)
+    
+    return HTMLResponse(content=describe_html, status_code=200)
+
+@router.get("/sarimax_train/{param}", tags=["Sarima/Sarimax"])
+async def sarima_train(param :str) -> HTMLResponse:
+    data = SarimaProccessor.train(param)
+    summary_html = f"<pre>{data}</pre>"
+
+    return HTMLResponse(content=summary_html, status_code=200)
+
+@router.get("/sarimax_plot/{param}", tags=["Sarima/Sarimax"])
+async def sarima_plot(param :str):
+    data = SarimaProccessor.plot(param)
+    return JSONResponse(content=f"data:image/png;base64,{data}", status_code=200)
+
+@router.get("/sarimax_forecast/{param}", tags=["Sarima/Sarimax"])
+async def sarima_forecast(param :str):
+    data1, data2 = SarimaProccessor.forecast(param)
+    return JSONResponse(content={
+        "img1": f"data:image/png;base64,{data1}",
+        "data1": data2
+    }
+)
 
 @router.get('/plot/', tags=["General"])
 async def send_plot_as_html() -> HTMLResponse:
