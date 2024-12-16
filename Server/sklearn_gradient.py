@@ -17,8 +17,8 @@ class SklearnProcessor:
     def sklearn_training():
         if g.sklearn_model == None:
             # Split the data into training and testing sets
-            X = g.df[['month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'quantity', 'price_per_unit']]
-            y = g.df['total_amount']
+            X = g.df[['transaction_id', 'month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'total_amount', 'price_per_unit']]
+            y = g.df['quantity']
 
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -57,8 +57,8 @@ class SklearnProcessor:
         
     def model_evaluation():
         # Best model from grid search
-        X = g.df[['month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'quantity', 'price_per_unit']]
-        y = g.df['total_amount']
+        X = g.df[['transaction_id', 'month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'total_amount', 'price_per_unit']]
+        y = g.df['quantity']
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         # Make predictions with the best model
@@ -85,7 +85,7 @@ class SklearnProcessor:
     def feature_importance():
         # Extract feature importances from the best model
         buf = io.BytesIO()
-        X = g.df[['month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'quantity', 'price_per_unit']]
+        X = g.df[['transaction_id', 'month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'total_amount', 'price_per_unit']]
         feature_importances = g.sklearn_model.feature_importances_
         feature_names = X.columns
 
@@ -109,8 +109,8 @@ class SklearnProcessor:
     
     def shap_value():
         # Assume g.df and g.sklearn_model are defined
-        X = g.df[['month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'quantity', 'price_per_unit']]
-        y = g.df['total_amount']
+        X = g.df[['transaction_id', 'month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'total_amount', 'price_per_unit']]
+        y = g.df['quantity']
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -119,7 +119,7 @@ class SklearnProcessor:
 
         # Create a buffer for the waterfall plot
         buffer1 = io.BytesIO()
-        ax = shap.plots.waterfall(shap_values[0], show=False)  # This returns an Axes object
+        ax = shap.plots.waterfall(shap_values[3], show=False)  # This returns an Axes object
         # Access the parent figure of the Axes object
         fig = ax.figure
         # Set the figure size after creating the plot
@@ -145,11 +145,11 @@ class SklearnProcessor:
         return img1_base64, img2_base64
 
     def lime():
-        X = g.df[['month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'quantity', 'price_per_unit']]
-        y = g.df['total_amount']
+        X = g.df[['transaction_id', 'month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'total_amount', 'price_per_unit']]
+        y = g.df['quantity']
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        instance = X_test.iloc[0]
+        instance = X_test.iloc[3]
 
         # Create a LIME explainer with mode='regression'
         lime_explainer = lime.lime_tabular.LimeTabularExplainer(
@@ -185,8 +185,8 @@ class SklearnProcessor:
     
     def predicted():
         # Create a DataFrame for plotting
-        X = g.df[['month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'quantity', 'price_per_unit']]
-        y = g.df['total_amount']
+        X = g.df[['transaction_id', 'month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'total_amount', 'price_per_unit']]
+        y = g.df['quantity']
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         instance = X_test.iloc[0]
 

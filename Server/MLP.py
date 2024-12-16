@@ -23,6 +23,8 @@ X_train_scaled: Optional[pd.DataFrame]  = None
 X_test_scaled: Optional[pd.DataFrame]   = None
 shap_values_KNN_test                    = None
 shap_values_KNN_train                   = None
+explainerKNN                            = None
+isShaped                                = False
 plt.switch_backend('agg')
 
 class MultiLayerPerceptronProccessor:
@@ -32,8 +34,8 @@ class MultiLayerPerceptronProccessor:
         
         if g.mlp_model == None:
             # Split the data into training and testing sets
-            X = g.df[['month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'quantity', 'price_per_unit']]
-            y = g.df['total_amount']
+            X = g.df[['transaction_id', 'month', 'year', 'day_of_week', 'day_of_month', 'gender', 'age', 'product_category', 'total_amount', 'price_per_unit']]
+            y = g.df['quantity']
 
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -44,12 +46,12 @@ class MultiLayerPerceptronProccessor:
 
             # Define the parameter grid for MLPRegressor
             param_grid = {
-                'hidden_layer_sizes': [(100,)],  # Different architectures
-                'activation': ['relu'],                            # Activation functions
-                'solver': ['sgd'],                                 # Optimization solvers
+                'hidden_layer_sizes': [(100,), (100, 50, 25)],  # Different architectures
+                'activation': ['tanh'],                            # Activation functions
+                'solver': ['adam'],                                # Optimization solvers
                 'learning_rate': ['adaptive'],                 # Learning rate schedules
-                'alpha': [0.0001, 0.001, 0.01],                            # Regularization term (L2 penalty)
-                'max_iter': [1000]                                    # Maximum iterations for convergence
+                'alpha': [0.01, 0.1],                            # Regularization term (L2 penalty)
+                'max_iter': [1000],
             }
 
             # Initialize the MLPRegressor model
@@ -128,20 +130,22 @@ class MultiLayerPerceptronProccessor:
         return image_b64
     
     def shap_value():
-        global X_test_scaled,X_train_scaled, shap_values_KNN_test, shap_values_KNN_train, X_train
+        global X_test_scaled,X_train_scaled, shap_values_KNN_test, shap_values_KNN_train, X_train, isShaped, explainerKNN
 
         # Assume g.df and g.sklearn_model are defined
-        if shap_values_KNN_test == None or shap_values_KNN_train == None:
-            X_train_summary = shap.kmeans(X_test_scaled, 100)
+        if isShaped == False:
+
+            X_train_summary = shap.kmeans(X_test_scaled, 30)
 
             explainerKNN = shap.KernelExplainer(g.mlp_model.predict, X_train_summary)
             shap_values_KNN_test = explainerKNN.shap_values(X_test_scaled)
             shap_values_KNN_train = explainerKNN.shap_values(X_train_scaled)
+            isShaped = True
 
         df_shap_KNN_test = pd.DataFrame(shap_values_KNN_test, columns=X_test.columns.values)
         df_shap_KNN_train = pd.DataFrame(shap_values_KNN_train, columns=X_train.columns.values)
 
-        instance_index = 0                     
+        instance_index = 171                     
         shap_values_instance = shap_values_KNN_train[instance_index]
         # Get the corresponding data from the NumPy array (X_train_scaled is a NumPy array)
         instance_data = X_train_scaled.iloc[instance_index, :]
@@ -182,7 +186,7 @@ class MultiLayerPerceptronProccessor:
 
     def lime():
         global X_train
-        instance = X_train.iloc[0]
+        instance = X_train.iloc[2]
 
         # Create a LIME explainer with mode='regression'
         lime_explainer = lime.lime_tabular.LimeTabularExplainer(
@@ -218,8 +222,8 @@ class MultiLayerPerceptronProccessor:
     
     def predicted():
         # Create a DataFrame for plotting
-        global X_test, y_test
-        y_pred = g.mlp_model.predict(X_test)
+        global X_test, y_test, X_test_scaled
+        y_pred = g.mlp_model.predict(X_test_scaled)
         plot_df = pd.DataFrame({'Year-Month': pd.to_datetime(X_test['year'].astype(str) + '-' + X_test['month'].astype(str), format='%Y-%m'),
                             'Actual': y_test,
                             'Predicted': y_pred})
