@@ -445,7 +445,7 @@ function App() {
                         {modelAction !== 'Arima' && modelAction !== 'Sarima' && (
                             <>
                             <option value="Training">Training</option>
-                            <option value="Evaluation">Evaluation</option>
+                            <option value="Evaluation">Evaluation (Model Accuracy)</option>
                             <option value="Feature Importances">Feature Importances</option>
                             <option value="Shap Values">Shap Values</option>
                             <option value="Lime">Lime Values</option>
@@ -457,7 +457,7 @@ function App() {
                             <option value="Data Analysis">Data Analysis</option>
                             <option value="Training">Training</option>
                             <option value="Model Graph">Model Graph</option>
-                            <option value="Forecasting">Forecasting</option>
+                            <option value="Forecasting">Forecasting And Accuracy</option>
                           </>
                         )}
                         </select>

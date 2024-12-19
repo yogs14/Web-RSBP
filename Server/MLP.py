@@ -116,7 +116,7 @@ class MultiLayerPerceptronProccessor:
         sorted_features = feature_names[sorted_idx]
 
         # Create a bar plot
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(14, 6))
         plt.barh(sorted_features, sorted_importances, color='skyblue')
         plt.xlabel("Feature Importance")
         plt.title("Permutation Feature Importance for MLPRegressor")
