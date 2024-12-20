@@ -11,6 +11,7 @@
 List of Individuals that have contributed for the development of **Web App** in **this repository**. *Not to be confused with group members*
 
 1. Johannes Daniswara Pratama (5025221276)
+2. Yoga Firman Syahputra (5025221212)
 
 ## Installation
 ```shell
